@@ -1,3 +1,4 @@
-export function check(str: string): boolean {
-    return typeof str === 'string';
-}
+import {EzRentOut} from "./class/EzRentOut";
+
+
+export {EzRentOut};

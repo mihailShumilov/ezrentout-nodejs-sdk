@@ -6,19 +6,26 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf dist && tsc",
     "main": "dist/index.js",
-    "types": "dist/index.d.ts"
+    "types": "dist/index.d.ts",
+    "dev-run": "ts-node src/index-dev.ts"
   },
   "keywords": [
     "EzRentOut",
     "nodejs",
-    "type script"
+    "type script",
+    "SDK"
   ],
   "author": "Michael Shumilov (Mykhailo Shumilov)",
   "license": "ISC",
   "description": "EzRentOut NodeJS SDK",
   "devDependencies": {
     "@types/node": "^24.0.10",
+    "dotenv": "^17.0.1",
     "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "axios": "^1.10.0"
   }
 }
