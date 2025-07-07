@@ -1,5 +1,5 @@
 import axios, {AxiosInstance} from "axios";
-import {Asset, User, Group, Location, Order, PagedResponse, AssetCreateRequest, AssetUpdateRequest} from "../@types";
+import {Asset, User, Group, PagedResponse, AssetCreateRequest, AssetUpdateRequest, GroupCreateRequest} from "../@types";
 import {ResponseDataKey} from "../@types/ResponseDataKey";
 import {ApiPagedResponse} from "../@types/ApiPagedResponse";
 import {SingleEntityResponse} from "../@types/SingleEntityResponse";
@@ -56,7 +56,12 @@ export class EzRentOut {
             });
 
             return {
-                data: result.data.assets,
+                data: result.data.assets.map((asset)=>{
+                    if(!asset.id && asset.sequence_num){
+                        asset.id = asset.sequence_num;
+                    }
+                    return asset;
+                }),
                 total_pages: result.data.total_pages
             };
         } catch (error: any) {
@@ -81,7 +86,11 @@ export class EzRentOut {
                 }
             });
 
-            return result.data.asset;
+            const asset =  result.data.asset;
+            if(!asset.id && asset.sequence_num){
+                asset.id = asset.sequence_num;
+            }
+            return asset;
         } catch (error: any) {
             throw new Error(`Failed to get asset by id: ${assetId} - ${error.message}`);
         }
@@ -266,6 +275,22 @@ export class EzRentOut {
             return result.data;
         } catch (error: any) {
             throw new Error(`Failed to check API status: ${error.message}`);
+        }
+    }
+
+    /**
+     * Creates a new group.
+     * @param groupData The group data to create.
+     * @returns The created group.
+     */
+    public async createGroup(groupData: GroupCreateRequest): Promise<Group> {
+        try {
+            const result = await this.request.post('/groups.api', {
+                group:groupData,
+            });
+            return result.data as Group;
+        } catch (error: any) {
+            throw new Error(`Failed to create group: ${error.message}`);
         }
     }
 }

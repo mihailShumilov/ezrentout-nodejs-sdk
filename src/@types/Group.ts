@@ -1,3 +1,8 @@
+export interface DepreciationRate {
+    depreciation_method_name: string;
+    rate: number;
+}
+
 // Group entity
 export interface Group {
     id: number;
@@ -27,6 +32,13 @@ export interface Group {
     active: boolean;
     minimum_depreciation_price: string;
     enable_task_template_triage: boolean;
-    depreciation_rates: any[];   // type this if you know the structure
+    depreciation_rates: DepreciationRate[];   // type this if you know the structure
     documents: any[];            // type/document this if you know the structure
 }
+
+export interface GroupCreateRequest {
+    name: string;
+    description?: string;
+    depreciation_rates?: DepreciationRate[];
+}
+

@@ -1,5 +1,5 @@
 import {Asset, AssetStatus, AssetCreateRequest, AssetUpdateRequest} from "./Asset";
-import {Group} from "./Group";
+import {Group, GroupCreateRequest} from "./Group";
 import {Location} from "./Location";
 import {Order, OrderStatus, OrderCreateRequest, OrderUpdateRequest} from "./Order";
 import {PagedResponse} from "./PagedResponse";
@@ -12,6 +12,7 @@ export {
     AssetCreateRequest,
     AssetUpdateRequest,
     Group,
+    GroupCreateRequest,
     Location,
     Order,
     OrderStatus,
