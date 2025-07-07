@@ -2,6 +2,7 @@ import axios, {AxiosInstance} from "axios";
 import {Asset, User, Group, Location, Order, PagedResponse, AssetCreateRequest, AssetUpdateRequest} from "../@types";
 import {ResponseDataKey} from "../@types/ResponseDataKey";
 import {ApiPagedResponse} from "../@types/ApiPagedResponse";
+import {SingleEntityResponse} from "../@types/SingleEntityResponse";
 
 /**
  * Represents a client for interacting with the EzRentOut API.
@@ -70,8 +71,17 @@ export class EzRentOut {
      */
     public async getAssetById(assetId: number): Promise<Asset> {
         try {
-            const result = await this.request.get(`/assets/${assetId}.api`);
-            return result.data as Asset;
+            const result = await this.request.get<SingleEntityResponse<Asset,  ResponseDataKey.Asset>>(`/assets/${assetId}.api`,{
+                params: {
+                    include_custom_fields: true,
+                    show_document_urls: true,
+                    show_services_details: true,
+                    show_image_urls: true,
+                    show_document_details: true
+                }
+            });
+
+            return result.data.asset;
         } catch (error: any) {
             throw new Error(`Failed to get asset by id: ${assetId} - ${error.message}`);
         }
@@ -220,8 +230,6 @@ export class EzRentOut {
                     show_document_details: true
                 }
             });
-
-            console.log(result.data);
 
             return {
                 data: result.data.groups,
