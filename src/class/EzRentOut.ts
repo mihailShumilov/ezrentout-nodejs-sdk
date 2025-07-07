@@ -1,5 +1,7 @@
 import axios, {AxiosInstance} from "axios";
-import {Asset, User, Group, Location, Order, PagedResponse} from "../@types";
+import {Asset, User, Group, Location, Order, PagedResponse, AssetCreateRequest, AssetUpdateRequest} from "../@types";
+import {ResponseDataKey} from "../@types/ResponseDataKey";
+import {ApiPagedResponse} from "../@types/ApiPagedResponse";
 
 export class EzRentOut {
     private readonly apiKey: string;
@@ -21,9 +23,9 @@ export class EzRentOut {
         })
     }
 
-    public async getAllAssets(page: number = 1): Promise<Asset[]> {
+    public async getAllAssets(page: number = 1): Promise<ApiPagedResponse<Asset, ResponseDataKey.Assets>> {
         try {
-            const result = await this.request.get<PagedResponse<Asset>>('/assets.api', {
+            const result = await this.request.get<PagedResponse<Asset, ResponseDataKey.Assets>>('/assets.api', {
                 params: {
                     page,
                     include_custom_fields: true,
@@ -33,7 +35,10 @@ export class EzRentOut {
                 }
             });
 
-            return result.data.data;
+            return {
+                data: result.data.assets,
+                total_pages: result.data.total_pages
+            };
         } catch (error: any) {
             throw new Error(`Failed to get all asset: ${error.message}`);
         }
