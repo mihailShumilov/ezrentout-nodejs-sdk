@@ -1,4 +1,5 @@
 export enum ResponseDataKey {
     Assets = "assets",
-    Users = "users"
+    Users = "users",
+    Groups = "groups",
 }

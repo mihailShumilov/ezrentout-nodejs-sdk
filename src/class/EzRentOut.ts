@@ -3,12 +3,23 @@ import {Asset, User, Group, Location, Order, PagedResponse, AssetCreateRequest, 
 import {ResponseDataKey} from "../@types/ResponseDataKey";
 import {ApiPagedResponse} from "../@types/ApiPagedResponse";
 
+/**
+ * Represents a client for interacting with the EzRentOut API.
+ * Provides methods to manage assets, users, orders, groups, and locations.
+ */
 export class EzRentOut {
     private readonly apiKey: string;
     private readonly subdomain: string;
 
     protected request: AxiosInstance;
 
+    /**
+     * Creates an instance of the API client with the provided API key and subdomain.
+     *
+     * @param {string} apiKey - The API key used for authenticating API requests.
+     * @param {string} subdomain - The subdomain of the API endpoint.
+     * @return {void} Constructs the API client instance and initializes the HTTP request configuration.
+     */
     constructor(apiKey: string, subdomain: string) {
         this.apiKey = apiKey;
         this.subdomain = subdomain;
@@ -23,6 +34,14 @@ export class EzRentOut {
         })
     }
 
+    /**
+     * Retrieves a paginated list of all assets.
+     *
+     * @param {number} [page=1] - The page number to retrieve. Defaults to 1.
+     * @return {Promise<ApiPagedResponse<Asset, ResponseDataKey.Assets>>}
+     *         A promise that resolves to an object containing the list of assets and pagination details.
+     * @throws {Error} Throws an error if the request fails.
+     */
     public async getAllAssets(page: number = 1): Promise<ApiPagedResponse<Asset, ResponseDataKey.Assets>> {
         try {
             const result = await this.request.get<PagedResponse<Asset, ResponseDataKey.Assets>>('/assets.api', {
@@ -193,12 +212,21 @@ export class EzRentOut {
      * @param page Page number for pagination.
      * @returns List of groups.
      */
-    public async getAllGroups(page: number = 1): Promise<any> {
+    public async getAllGroups(page: number = 1): Promise<ApiPagedResponse<Group, ResponseDataKey.Groups>> {
         try {
-            const result = await this.request.get('/groups.api', {
-                params: {page}
+            const result = await this.request.get<PagedResponse<Group, ResponseDataKey.Groups>>('/assets/classification_view.api', {
+                params: {
+                    page,
+                    show_document_details: true
+                }
             });
-            return result.data;
+
+            console.log(result.data);
+
+            return {
+                data: result.data.groups,
+                total_pages: result.data.total_pages
+            };
         } catch (error: any) {
             throw new Error(`Failed to get all groups: ${error.message}`);
         }
