@@ -1,4 +1,3 @@
-import {EzRentOut} from "./class/EzRentOut";
+export {EzRentOut} from "./class/EzRentOut";
 
-
-export {EzRentOut};
+// export default EzRentOut;
