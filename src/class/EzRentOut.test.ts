@@ -1,5 +1,6 @@
 import {EzRentOut} from './EzRentOut';
 import axios, {AxiosInstance} from 'axios';
+import {GroupCreateRequest} from "../@types";
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -67,5 +68,72 @@ describe('EzRentOut - getAllAssets', () => {
                 show_document_details: true,
             },
         });
+    });
+});
+
+
+describe('EzRentOut - createGroup', () => {
+    let ezRentOut: EzRentOut;
+    let mockRequest: AxiosInstance;
+
+    beforeEach(() => {
+        const apiKey = 'testApiKey';
+        const subdomain = 'testSubdomain';
+        ezRentOut = new EzRentOut(apiKey, subdomain);
+        mockRequest = ezRentOut['request'];
+        mockedAxios.create.mockReturnValue(mockRequest);
+    });
+
+    it('should successfully create a group and return its data', async () => {
+        const mockGroupData: GroupCreateRequest = { name: 'New Group', description: 'Test Group Description' };
+        const mockResponse = {
+            data: {
+                id: 1,
+                name: 'New Group',
+                description: 'Test Group Description',
+                company_id: 100,
+                created_at: '2025-07-11T12:00:00Z',
+                updated_at: '2025-07-11T12:00:00Z',
+                assets_count: 0,
+                documents_count: 0,
+                delta: false,
+                pricing_bracket_interval: null,
+                enable_service_triage: false,
+                triage_completion_period: 0,
+                visible_on_web_store: true,
+                triage_completion_period_basis: 'days',
+                indefinite_triage_completion_period: false,
+                hidden_on_web_store: false,
+                allow_staff_to_set_checkout_duration: false,
+                staff_checkout_duration_months: 0,
+                staff_checkout_duration_weeks: 0,
+                staff_checkout_duration_days: 0,
+                staff_checkout_duration_hours: 0,
+                staff_checkout_duration_mins: 0,
+                asset_depreciation_mode: '',
+                comments_count: null,
+                active: true,
+                minimum_depreciation_price: '0',
+                enable_task_template_triage: false,
+                depreciation_rates: [],
+                documents: []
+            }
+        };
+
+        mockedAxios.post.mockResolvedValue(mockResponse);
+
+        const result = await ezRentOut.createGroup(mockGroupData);
+
+        expect(mockedAxios.post).toHaveBeenCalledWith('/groups.api', { group: mockGroupData });
+        expect(result).toEqual(mockResponse.data);
+    });
+
+    it('should throw an error when the API request fails', async () => {
+        const mockGroupData: GroupCreateRequest = { name: 'New Group', description: 'Test Group Description' };
+        mockedAxios.post.mockRejectedValue(new Error('Network Error'));
+
+        await expect(ezRentOut.createGroup(mockGroupData)).rejects.toThrow('Failed to create group: Network Error');
+
+        expect(mockedAxios.post).toHaveBeenCalledWith('/groups.api', { group: mockGroupData });
     });
 });

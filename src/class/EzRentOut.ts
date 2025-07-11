@@ -1,5 +1,15 @@
 import axios, {AxiosInstance} from "axios";
-import {Asset, User, Group, PagedResponse, AssetCreateRequest, AssetUpdateRequest, GroupCreateRequest} from "../@types";
+import {
+    Asset,
+    User,
+    Group,
+    PagedResponse,
+    AssetCreateRequest,
+    AssetUpdateRequest,
+    GroupCreateRequest,
+    GroupUpdateRequest,
+    SubGroup
+} from "../@types";
 import {ResponseDataKey} from "../@types/ResponseDataKey";
 import {ApiPagedResponse} from "../@types/ApiPagedResponse";
 import {SingleEntityResponse} from "../@types/SingleEntityResponse";
@@ -56,8 +66,8 @@ export class EzRentOut {
             });
 
             return {
-                data: result.data.assets.map((asset)=>{
-                    if(!asset.id && asset.sequence_num){
+                data: result.data.assets.map((asset) => {
+                    if (!asset.id && asset.sequence_num) {
                         asset.id = asset.sequence_num;
                     }
                     return asset;
@@ -76,7 +86,7 @@ export class EzRentOut {
      */
     public async getAssetById(assetId: number): Promise<Asset> {
         try {
-            const result = await this.request.get<SingleEntityResponse<Asset,  ResponseDataKey.Asset>>(`/assets/${assetId}.api`,{
+            const result = await this.request.get<SingleEntityResponse<Asset, ResponseDataKey.Asset>>(`/assets/${assetId}.api`, {
                 params: {
                     include_custom_fields: true,
                     show_document_urls: true,
@@ -86,8 +96,8 @@ export class EzRentOut {
                 }
             });
 
-            const asset =  result.data.asset;
-            if(!asset.id && asset.sequence_num){
+            const asset = result.data.asset;
+            if (!asset.id && asset.sequence_num) {
                 asset.id = asset.sequence_num;
             }
             return asset;
@@ -227,21 +237,29 @@ export class EzRentOut {
     }
 
     /**
-     * Retrieves all groups.
-     * @param page Page number for pagination.
-     * @returns List of groups.
+     * Fetches a list of groups from either the main classification view or a subgroup based on the provided parameters.
+     *
+     * @param {number} [page=1] - The page number to retrieve when fetching from the main classification view. Defaults to 1.
+     * @param {number} [parentId] - The ID of the parent group to fetch subgroups for. If provided, retrieves subgroups instead of the main classification.
+     * @return {Promise<ApiPagedResponse<Group, ResponseDataKey.Groups>>} A promise resolving to an object containing the fetched groups and the total number of pages.
+     * @throws {Error} Throws an error if the request fails.
      */
-    public async getAllGroups(page: number = 1): Promise<ApiPagedResponse<Group, ResponseDataKey.Groups>> {
+    public async getAllGroups(page: number = 1, parentId?: number): Promise<ApiPagedResponse<Group|SubGroup, ResponseDataKey.Groups|ResponseDataKey.SubGroups>> {
         try {
-            const result = await this.request.get<PagedResponse<Group, ResponseDataKey.Groups>>('/assets/classification_view.api', {
-                params: {
-                    page,
-                    show_document_details: true
-                }
-            });
+            const getAllGroupsUrl = parentId ? `/groups/get_sub_groups.api` : '/assets/classification_view.api';
 
+            const params = parentId ? {
+                group_id: parentId,
+            } : {
+                page,
+                show_document_details: true
+            };
+
+            const result = await this.request.get<PagedResponse<Group|SubGroup, ResponseDataKey.Groups|ResponseDataKey.SubGroups>>(getAllGroupsUrl, {
+                params
+            });
             return {
-                data: result.data.groups,
+                data: parentId?result.data.sub_groups:result.data.groups,
                 total_pages: result.data.total_pages
             };
         } catch (error: any) {
@@ -279,18 +297,48 @@ export class EzRentOut {
     }
 
     /**
-     * Creates a new group.
-     * @param groupData The group data to create.
-     * @returns The created group.
+     * Creates a new group or sub-group based on the provided data.
+     *
+     * @param {GroupCreateRequest} groupData - The data required to create the group.
+     * @param {number} [parentId] - Optional ID of the parent group for creating a sub-group.
+     * @return {Promise<Group>} A promise that resolves to the created group object.
+     * @throws {Error} If the group creation fails.
      */
-    public async createGroup(groupData: GroupCreateRequest): Promise<Group> {
+    public async createGroup(groupData: GroupCreateRequest, parentId?: number): Promise<Group> {
         try {
-            const result = await this.request.post('/groups.api', {
-                group:groupData,
-            });
+            const createGroupUrl = parentId ? `/groups/${parentId}/sub_groups.api` : '/groups.api';
+
+            const params = parentId ? {
+                sub_group: groupData,
+            }: {
+                group: groupData,
+            }
+
+            const result = await this.request.post(createGroupUrl, params);
             return result.data as Group;
         } catch (error: any) {
             throw new Error(`Failed to create group: ${error.message}`);
+        }
+    }
+
+    /**
+     * Updates the details of a group with the given ID.
+     *
+     * @param {number} groupId - The unique identifier of the group to update.
+     * @param {GroupUpdateRequest} groupData - The data to update the group with.
+     * @param {number} [parentId] - The optional parent group ID, used for updating sub-groups.
+     * @return {Promise<Group>} A promise that resolves to the updated group object.
+     */
+    public async updateGroup(groupId: number, groupData: GroupUpdateRequest, parentId?: number): Promise<Group> {
+        try {
+            const updateGroupUrl = parentId ? `/groups/${parentId}/sub_groups/${groupId}.api` : `/groups/${groupId}.api`;
+
+            const result = await this.request.put(`/groups/${groupId}.api`, {
+                group: groupData,
+            });
+            return result.data as Group;
+        } catch (error: any) {
+            throw new Error(`Failed to update group with id ${groupId}: ${error.message}`);
         }
     }
 }

@@ -118,5 +118,8 @@
   "include": ["src/**/*"],
   "tsc-alias": {
     "resolveFullPaths": true       // or ".mjs" / ".cjs"
+  },
+  "ts-node": {
+    "esm": true              // auto-enable the loader
   }
 }
